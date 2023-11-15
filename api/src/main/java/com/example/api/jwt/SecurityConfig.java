@@ -30,9 +30,12 @@ public class SecurityConfig {
                 .authorizeRequests()
                 // 해당 api 에 대해서 모든 요청을 허가
                 .antMatchers("/api/member/login").permitAll()
+                .antMatchers("/api/member/signin").permitAll()
+                .antMatchers("/api/member/isDupId").permitAll()
+                .antMatchers("/api/member/token").permitAll()
 //                .antMatchers("/api/user/join").permitAll()
                 // USER 권한이 있어야 요청
-                .antMatchers("/api/member/test").hasRole("USER")
+                .antMatchers("/api/member/*").hasRole("USER")
                 // 이 외에 모든 요청에 대해서 인증 필요
                 .anyRequest().authenticated()
                 .and()
