@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
 import Top from './Top';
-import { Link } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 
-function Login({ test }) {
-  const [logInfo, setLogInfo] = useState({ userId: '', userPassword: '' });
-
-  console.log(logInfo);
-
+function Login({ setLogged, setJwt, setForm }) {
+  const [logInfo, setLogInfo] = useState({ memberId: '', password: '' });
+  const navigate = useNavigate();
   const val_chk = (e) => {
+    console.log('dh');
     e.preventDefault();
-    if (logInfo.userId == '') {
+    if (logInfo.memberId == '') {
       alert('아이디를 입력해주세요');
       return false;
     }
-    if (logInfo.userPassword == '') {
+    if (logInfo.password == '') {
       alert('비밀번호를 입력해주세요.');
       return false;
     }
@@ -23,12 +23,14 @@ function Login({ test }) {
 
   const login_chk = async () => {
     try {
-      const req = await axios.post('/api/user/login', null, {
-        params: logInfo,
-      });
+      const req = await axios.post('/api/member/login', logInfo);
+      console.log(req.data);
       if (req.data) {
         alert('로그인 성공');
-        // test();
+        window.localStorage.setItem('accessToken', req.data.accessToken);
+        window.localStorage.setItem('refreshToken', req.data.refreshToken);
+        setJwt({ accessToken: req.data.accessToken, refreshToken: req.data.refreshToken });
+        setLogged(true);
       } else {
         alert('로그인 실패');
       }
@@ -37,33 +39,61 @@ function Login({ test }) {
     }
   };
 
+  const isToken = async () => {
+    try {
+      const req = await axios.post('/api/member/token', null, {
+        // headers: {
+        //   Authorization: window.localStorage.getItem('jwt_token'),
+        // },
+        params: {
+          token: window.localStorage.getItem('accessToken'),
+        },
+      });
+      console.log(req.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
-    <div>
-      <Top name={'로그인'} />
-      <form onSubmit={val_chk}>
-        <label htmlFor="userId" />
-        아이디 <label />
-        <input
-          type="text"
-          name="userId"
-          value={logInfo.userId}
-          onChange={(e) => setLogInfo({ ...logInfo, userId: e.target.value })}
-        />
-        <br />
-        <label htmlFor="userPw" />
-        비밀번호 <label />
-        <input
-          type="password"
-          name="userPw"
-          value={logInfo.userPassword}
-          onChange={(e) => setLogInfo({ ...logInfo, userPassword: e.target.value })}
-        />
-        <br />
-        <button>로그인</button>
-      </form>
-      <button>
-        <Link to="/join">회원가입</Link>
-      </button>
+    <div className="login_form">
+      <Form onSubmit={val_chk}>
+        <Form.Group as={Row} className="mb-3">
+          <Form.Label>ID</Form.Label>
+          <Col>
+            <Form.Control
+              type="text"
+              value={logInfo.memberId}
+              onChange={(e) => setLogInfo({ ...logInfo, memberId: e.target.value })}
+            />
+          </Col>
+          <Form.Label>PW</Form.Label>
+          <Col>
+            <Form.Control
+              type="password"
+              value={logInfo.password}
+              onChange={(e) => setLogInfo({ ...logInfo, password: e.target.value })}
+            />
+          </Col>
+        </Form.Group>
+        <div className="d-grid gap-2">
+          <Button variant="secondary" type="submit" size="lg" block>
+            LOGIN
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={(e) => {
+              setForm(false);
+            }}
+            size="lg"
+            block
+          >
+            SIGNUP
+          </Button>
+        </div>
+      </Form>
+
+      {/* <button onClick={isToken}>토큰확인</button> */}
     </div>
   );
 }

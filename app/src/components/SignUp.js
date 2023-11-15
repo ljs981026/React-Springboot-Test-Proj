@@ -1,14 +1,16 @@
 import axios from 'axios';
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import Top from './Top';
+import { Button, Col, Form, Row } from 'react-bootstrap';
 
-function SignUp() {
+function SignUp({ setForm }) {
   const [user, setUser] = useState({
-    userEmail: '',
-    userName: '',
-    userId: '',
-    userPassword: '',
+    email: '',
+    nickName: '',
+    memberId: '',
+    password: '',
+    roles: [],
   });
 
   const [pw2, setPw2] = useState('');
@@ -16,21 +18,22 @@ function SignUp() {
   const [isDup, setIsDup] = useState(false);
 
   const info = {
-    userEmail: '이메일',
-    userName: '이름',
-    userId: '아이디',
-    userPassword: '패스워드',
+    email: '이메일',
+    nickName: '이름',
+    memberId: '아이디',
+    password: '패스워드',
+    roles: '권한',
   };
 
   const id_chk = async () => {
     try {
-      if (user.userId == '') {
+      if (user.memberId == '') {
         alert('아이디를 입력해주세요');
         return false;
       }
-      const req = await axios.post('/api/user/idchk', null, {
+      const req = await axios.post('/api/member/isDupId', null, {
         params: {
-          userId: user.userId,
+          memberId: user.memberId,
         },
       });
       if (!req.data) {
@@ -38,7 +41,7 @@ function SignUp() {
         alert('사용할 수 있는 아이디입니다.');
       } else {
         setIsDup(false);
-        setUser({ ...user, userId: '' });
+        setUser({ ...user, memberId: '' });
         alert('이미 사용중인 아이디입니다.');
       }
     } catch (error) {}
@@ -46,15 +49,18 @@ function SignUp() {
 
   const val_chk = (e) => {
     e.preventDefault();
+    console.log(user, info);
     for (const key of Object.keys(user)) {
+      console.log(key, info);
       const value = user[key];
       const value2 = info[key];
+      console.log(value, value2);
       if (value == '') {
         alert(value2 + '를 입력해주세요');
         return false;
       }
     }
-    if (user.userPassword != pw2) {
+    if (user.password != pw2) {
       alert('비밀번호가 서로 일치하지 않습니다.');
       return false;
     }
@@ -69,17 +75,19 @@ function SignUp() {
 
   const join = async (e) => {
     try {
-      const req = await axios.post('/api/user/save', user);
+      const req = await axios.post('/api/member/signin', user);
       console.log(req.data, 'fdslkfj');
       if (req.data) {
         alert('회원가입 성공');
+        setForm(true);
       } else {
         alert('회원가입 실패');
         setUser({
-          userEmail: '',
-          userName: '',
-          userId: '',
-          userPassword: '',
+          eamil: '',
+          nickName: '',
+          memberId: '',
+          password: '',
+          roles: [],
         });
       }
     } catch (error) {
@@ -88,55 +96,88 @@ function SignUp() {
   };
 
   return (
-    <div>
-      <Top name={'회원가입'} />
-      <form onSubmit={val_chk}>
-        <label htmlFor="userEmail">이메일: </label>
-        <input
-          type="text"
-          name="userEmail"
-          value={user.userEmail}
-          onChange={(e) => setUser({ ...user, userEmail: e.target.value })}
-        />
-        <br />
-        <label htmlFor="userName">이름: </label>
-        <input
-          type="text"
-          name="userName"
-          value={user.userName}
-          onChange={(e) => setUser({ ...user, userName: e.target.value })}
-        />
-        <br />
-        <label htmlFor="userId">아이디: </label>
-        <input
-          type="text"
-          name="userId"
-          value={user.userId}
-          onChange={(e) => setUser({ ...user, userId: e.target.value })}
-        />
-        <input type="button" value="중복체크" onClick={id_chk} />
-        <br />
-        <label htmlFor="userPassword">비밀번호: </label>
-        <input
-          type="password"
-          name="userPassword"
-          value={user.userPassword}
-          onChange={(e) => setUser({ ...user, userPassword: e.target.value })}
-        />
-        <br />
-        <label htmlFor="userPassword2">비밀번호 확인: </label>
-        <input
-          type="password"
-          name="userPassword2"
-          value={pw2}
-          onChange={(e) => setPw2(e.target.value)}
-        />
-        <br />
-        <input type="submit" value="회원가입"></input>
-        <button>
-          <Link to="/">로그인하러가기</Link>
-        </button>
-      </form>
+    <div className="login_form">
+      <Form onSubmit={val_chk}>
+        <Form.Group as={Row} className="mb-3">
+          <Form.Label>Email</Form.Label>
+          <Col>
+            <Form.Control
+              type="email"
+              value={user.email}
+              onChange={(e) => setUser({ ...user, email: e.target.value })}
+            />
+          </Col>
+          <Form.Label>Name</Form.Label>
+          <Col>
+            <Form.Control
+              type="text"
+              name="nickName"
+              value={user.nickName}
+              onChange={(e) => setUser({ ...user, nickName: e.target.value })}
+            />
+          </Col>
+          <Form.Label>ID</Form.Label>
+          <Col className="d-flex gap-2">
+            <Form.Control
+              type="text"
+              name="memberId"
+              value={user.memberId}
+              onChange={(e) => setUser({ ...user, memberId: e.target.value })}
+              style={{ height: '30px', width: '80%' }}
+            />
+            <Button
+              variant="secondary"
+              onClick={id_chk}
+              style={{ height: '30px', width: '20%', lineHeight: '10px' }}
+            >
+              ID check
+            </Button>
+          </Col>
+          <Form.Label>PW</Form.Label>
+          <Col>
+            <Form.Control
+              type="password"
+              name="password"
+              value={user.password}
+              onChange={(e) => setUser({ ...user, password: e.target.value })}
+            />
+          </Col>
+          <Form.Label>PW Check</Form.Label>
+          <Col>
+            <Form.Control
+              type="password"
+              name="userPassword2"
+              value={pw2}
+              onChange={(e) => setPw2(e.target.value)}
+            />
+          </Col>
+          <Form.Label>Role</Form.Label>
+          <Col>
+            <Form.Check
+              type="checkbox"
+              name="roles"
+              value={['USER']}
+              onChange={(e) => setUser({ ...user, roles: [e.target.value] })}
+              label={`User`}
+            />
+          </Col>
+        </Form.Group>
+        <div className="d-grid gap-2">
+          <Button type="submit" variant="secondary" size="lg" block>
+            SignUp
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={(e) => {
+              setForm(true);
+            }}
+            size="lg"
+            block
+          >
+            ToLogin
+          </Button>
+        </div>
+      </Form>
     </div>
   );
 }
