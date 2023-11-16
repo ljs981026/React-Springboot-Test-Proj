@@ -24,6 +24,11 @@ public class CustomUserDetailService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("해당하는 유저를 찾을 수 없습니다."));
     }
 
+    public String loadedUserByAuth(String username) throws UsernameNotFoundException {
+        UserDetails user = loadUserByUsername(username);
+        return user.getAuthorities().toString();
+    }
+
     // 해당 하는 User 의 데이터 존재 한다면 UserDetails 객체로 만들어서 리턴
     private UserDetails createUserDetails(Member memberEntity) {
         return User.builder()
@@ -32,4 +37,6 @@ public class CustomUserDetailService implements UserDetailsService {
                 .roles(memberEntity.getRoles().toArray(new String[0]))
                 .build();
     }
+
+
 }

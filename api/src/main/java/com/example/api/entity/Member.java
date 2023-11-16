@@ -1,6 +1,8 @@
 package com.example.api.entity;
 
+import com.example.api.dto.MemberDTO;
 import lombok.*;
+import org.hibernate.engine.spi.CascadeStyle;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,10 +14,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "member")
 public class Member implements UserDetails {
 
     @Id
@@ -28,6 +32,12 @@ public class Member implements UserDetails {
     @ElementCollection(fetch = FetchType.EAGER)
     @Builder.Default
     private List<String> roles = new ArrayList<>();
+
+    @Column(unique = true)
+    private String email;
+
+    @Column
+    private String nickName;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -65,4 +75,6 @@ public class Member implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
 }
+

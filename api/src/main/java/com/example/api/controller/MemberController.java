@@ -1,14 +1,15 @@
 package com.example.api.controller;
 
+import com.example.api.dto.MemberDTO;
 import com.example.api.dto.MemberLoginRequestDTO;
 import com.example.api.dto.TokenInfoDTO;
+import com.example.api.service.CustomUserDetailService;
 import com.example.api.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 @Slf4j
 @RestController
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class MemberController {
     private final MemberService memberService;
+    private final CustomUserDetailService customUserDetailService;
+
 
     @PostMapping("/member/login")
     public TokenInfoDTO login(@RequestBody MemberLoginRequestDTO memberLoginRequestDTO) {
@@ -25,8 +28,18 @@ public class MemberController {
         return tokenInfoDTO;
     }
 
-    @PostMapping("/member/test")
-    public String test() {
-        return "success";
+    @PostMapping("/member/isDupId")
+    public boolean idChk(String memberId) {
+        return memberService.idChk(memberId);
+    }
+
+    @PostMapping("/member/signin")
+    public boolean signin(@RequestBody MemberDTO memberDTO) {
+        return memberService.save(memberDTO);
+    }
+
+    @PostMapping("/member/token")
+    public boolean isVal(String token) {
+        return memberService.isValidated(token);
     }
 }

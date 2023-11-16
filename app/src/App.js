@@ -1,33 +1,50 @@
 import './App.css';
-import Login from './components/Login.js';
-
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Top from './components/Top.js';
-import SignUp from './components/SignUp.js';
-import Main from './components/Main.js';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import AppRouter from './components/Router.js';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   const [logged, setLogged] = useState(false);
+  const [init, setInit] = useState(false);
+  const [jwt, setJwt] = useState({
+    accessToken: '',
+    refreshToken: '',
+  });
 
-  const test = () => {
-    setLogged(true);
+  const tokenChk = async () => {
+    try {
+      const req = await axios.post('/api/member/token', null, {
+        params: {
+          token: localStorage.getItem('accessToken'),
+        },
+      });
+      if (req.data) {
+        setLogged(true);
+      } else {
+        setLogged(false);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    setInit(true);
   };
+
+  useEffect(() => {
+    tokenChk();
+  }, [logged]);
+
+  // const
 
   console.log(logged);
 
   return (
     <>
-      <BrowserRouter>
-        <Routes>
-          {logged ? (
-            <Route path="/" element={<Main />} />
-          ) : (
-            <Route path="/" element={<Login test={test} />} />
-          )}
-          <Route path="/join" element={<SignUp />} />
-        </Routes>
-      </BrowserRouter>
+      {init ? (
+        <AppRouter init={init} logged={logged} setJwt={setJwt} setLogged={setLogged} />
+      ) : (
+        'loading...'
+      )}
     </>
   );
 }
